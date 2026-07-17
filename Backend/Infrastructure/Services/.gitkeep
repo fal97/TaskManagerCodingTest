@@ -1,5 +1,0 @@
-namespace Backend.Infrastructure.Services;
-
-/// <summary>
-/// Folder for external service integrations (e.g., Azure Service Bus, Redis, etc.).
-/// </summary>

@@ -1,6 +1,0 @@
-namespace Backend.Application.Features.Tasks.Queries;
-
-/// <summary>
-/// Folder for task-related queries in the CQRS pattern.
-/// Queries are read-only operations that retrieve data.
-/// </summary>
