@@ -1,0 +1,6 @@
+namespace Backend.Infrastructure.Repositories;
+
+/// <summary>
+/// Folder for repository implementations.
+/// Repositories abstract data access and follow the repository pattern.
+/// </summary>

@@ -1,0 +1,6 @@
+namespace Backend.Application.Features.Tasks.Commands;
+
+/// <summary>
+/// Folder for task-related commands in the CQRS pattern.
+/// Commands are operations that modify state (Create, Update, Delete).
+/// </summary>

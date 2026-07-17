@@ -1,0 +1,5 @@
+namespace Backend.Infrastructure.Persistence;
+
+/// <summary>
+/// Folder for database context and entity configurations.
+/// </summary>

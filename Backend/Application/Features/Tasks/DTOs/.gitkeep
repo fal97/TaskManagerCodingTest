@@ -1,0 +1,6 @@
+namespace Backend.Application.Features.Tasks.DTOs;
+
+/// <summary>
+/// Folder for task DTOs (Data Transfer Objects).
+/// DTOs are used to transfer data between layers without exposing domain entities.
+/// </summary>
