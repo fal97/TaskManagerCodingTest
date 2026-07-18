@@ -1,4 +1,5 @@
 using Backend.Application.Abstractions;
+using Backend.Application.Common.Behaviors;
 using Backend.Application.Features.Tasks.Commands.CreateUserTask;
 using Backend.Infrastructure.Persistence;
 using FluentValidation;
@@ -41,7 +42,10 @@ public static class ServiceCollectionExtensions
 
         // Register MediatR for CQRS pattern
         services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssembly(typeof(CreateUserTaskCommand).Assembly));
+        {
+            cfg.RegisterServicesFromAssembly(typeof(CreateUserTaskCommand).Assembly);
+            cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+        });
 
         // Register FluentValidation validators
         services.AddValidatorsFromAssembly(typeof(CreateUserTaskValidator).Assembly);
