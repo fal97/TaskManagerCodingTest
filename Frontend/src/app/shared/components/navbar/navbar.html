@@ -1,0 +1,19 @@
+<mat-toolbar class="navbar">
+  <a class="brand" routerLink="/" aria-label="Task Manager home">
+    Task Manager
+  </a>
+
+  <nav aria-label="Primary navigation">
+    <a
+      mat-button
+      routerLink="/"
+      routerLinkActive="active-link"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      Home
+    </a>
+    <a mat-button routerLink="/tasks" routerLinkActive="active-link">
+      Tasks
+    </a>
+  </nav>
+</mat-toolbar>

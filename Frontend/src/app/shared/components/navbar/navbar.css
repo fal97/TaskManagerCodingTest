@@ -1,0 +1,25 @@
+:host {
+  display: block;
+}
+
+.navbar {
+  gap: 1.5rem;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+}
+
+.brand {
+  color: inherit;
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+nav {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+.active-link {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
