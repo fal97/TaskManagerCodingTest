@@ -1,0 +1,40 @@
+using Backend.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Backend.Infrastructure;
+
+/// <summary>
+/// Extension methods for registering infrastructure services in the dependency injection container.
+/// </summary>
+public static class ServiceCollectionExtensions
+{
+    /// <summary>
+    /// Adds infrastructure services to the dependency injection container.
+    /// Registers the ApplicationDbContext and related services.
+    /// </summary>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="configuration">The application configuration containing connection strings.</param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when DefaultConnection string is not configured.</exception>
+    public static IServiceCollection AddInfrastructureServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        // Get the connection string
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found in configuration.");
+
+        // Register DbContext with SQL Server
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer(connectionString, sqlServerOptions =>
+                sqlServerOptions.MigrationsAssembly("Backend.Infrastructure")));
+
+        // Register IApplicationDbContext interface for dependency injection
+        services.AddScoped<IApplicationDbContext>(provider =>
+            provider.GetRequiredService<ApplicationDbContext>());
+
+        return services;
+    }
+}
