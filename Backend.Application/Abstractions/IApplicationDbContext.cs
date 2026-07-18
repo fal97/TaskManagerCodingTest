@@ -1,7 +1,7 @@
 using Backend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Infrastructure.Persistence;
+namespace Backend.Application.Abstractions;
 
 /// <summary>
 /// Abstraction for the application database context.

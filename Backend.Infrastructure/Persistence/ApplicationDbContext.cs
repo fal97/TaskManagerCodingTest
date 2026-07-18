@@ -1,3 +1,4 @@
+using Backend.Application.Abstractions;
 using Backend.Domain.Entities;
 using Backend.Infrastructure.Persistence.Configurations;
 using Microsoft.EntityFrameworkCore;

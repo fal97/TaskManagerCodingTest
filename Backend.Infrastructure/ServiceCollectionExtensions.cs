@@ -1,4 +1,8 @@
+using Backend.Application.Abstractions;
+using Backend.Application.Features.Tasks.Commands.CreateUserTask;
 using Backend.Infrastructure.Persistence;
+using FluentValidation;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +16,7 @@ public static class ServiceCollectionExtensions
 {
     /// <summary>
     /// Adds infrastructure services to the dependency injection container.
-    /// Registers the ApplicationDbContext and related services.
+    /// Registers the ApplicationDbContext, MediatR, and FluentValidation.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="configuration">The application configuration containing connection strings.</param>
@@ -34,6 +38,13 @@ public static class ServiceCollectionExtensions
         // Register IApplicationDbContext interface for dependency injection
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<ApplicationDbContext>());
+
+        // Register MediatR for CQRS pattern
+        services.AddMediatR(cfg =>
+            cfg.RegisterServicesFromAssembly(typeof(CreateUserTaskCommand).Assembly));
+
+        // Register FluentValidation validators
+        services.AddValidatorsFromAssembly(typeof(CreateUserTaskValidator).Assembly);
 
         return services;
     }
