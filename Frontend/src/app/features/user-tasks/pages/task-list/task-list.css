@@ -58,15 +58,30 @@ h1 {
 }
 
 .filters {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
+  align-items: start;
+  display: grid;
   gap: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .filters mat-form-field {
   background: #ffffff;
-  flex: 1 1 13rem;
+  width: 100%;
+}
+
+.search-field {
+  grid-column: span 2;
+}
+
+.filter-actions {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  min-height: 3.5rem;
+}
+
+.filter-actions button {
+  min-width: 6rem;
 }
 
 .task-card {
@@ -89,6 +104,14 @@ th[mat-header-cell] {
   background: #e8eef5;
   color: #17324d;
   font-weight: 700;
+}
+
+th[mat-header-cell][mat-sort-header] {
+  cursor: pointer;
+}
+
+:host ::ng-deep .mat-sort-header-arrow {
+  color: #0f766e;
 }
 
 tr[mat-row]:nth-child(even) {
@@ -223,5 +246,23 @@ tr[mat-row]:hover {
 
   .page-header button {
     width: 100%;
+  }
+
+  .filters {
+    grid-template-columns: 1fr;
+  }
+
+  .search-field {
+    grid-column: auto;
+  }
+
+  .filter-actions button {
+    flex: 1;
+  }
+}
+
+@media (min-width: 40.01rem) and (max-width: 70rem) {
+  .filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
   CreateUserTaskRequest,
+  IsoDateString,
   TaskPriority,
   TaskStatus,
   UpdateUserTaskRequest,
@@ -12,9 +13,24 @@ import {
 } from '../models';
 
 export interface UserTaskFilters {
+  searchTerm?: string;
   status?: TaskStatus;
   priority?: TaskPriority;
+  dueFrom?: IsoDateString;
+  dueTo?: IsoDateString;
+  sortBy?: UserTaskSortField;
+  sortDirection?: SortDirection;
 }
+
+export type UserTaskSortField =
+  | 'title'
+  | 'status'
+  | 'priority'
+  | 'dueDate'
+  | 'createdDate'
+  | 'lastModifiedDate';
+
+export type SortDirection = 'asc' | 'desc';
 
 @Injectable({ providedIn: 'root' })
 export class UserTaskService {
@@ -33,6 +49,18 @@ export class UserTaskService {
     }
 
     return this.http.get<UserTask[]>(this.resourceUrl, { params });
+  }
+
+  search(filters: UserTaskFilters = {}): Observable<UserTask[]> {
+    let params = new HttpParams();
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== '') {
+        params = params.set(key, value);
+      }
+    });
+
+    return this.http.get<UserTask[]>(`${this.resourceUrl}/search`, { params });
   }
 
   getById(id: number): Observable<UserTask> {
