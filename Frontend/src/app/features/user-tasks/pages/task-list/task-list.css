@@ -117,6 +117,26 @@ table {
   color: #991b1b;
 }
 
+.row-actions {
+  display: flex;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+.delete-action {
+  color: var(--mat-sys-error) !important;
+}
+
+.visually-hidden {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
 .state-panel {
   align-items: center;
   display: flex;

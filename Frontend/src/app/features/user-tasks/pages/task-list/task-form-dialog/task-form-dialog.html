@@ -1,0 +1,48 @@
+<h2 mat-dialog-title>{{ data.task ? 'Edit task' : 'Add task' }}</h2>
+
+<mat-dialog-content>
+  <form id="task-form" [formGroup]="form" (ngSubmit)="save()">
+    <mat-form-field appearance="outline">
+      <mat-label>Title</mat-label>
+      <input matInput formControlName="title" maxlength="200" />
+      @if (form.controls.title.hasError('required')) {
+        <mat-error>Title is required.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description" rows="3" maxlength="2000"></textarea>
+    </mat-form-field>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Priority</mat-label>
+        <mat-select formControlName="priority">
+          @for (priority of priorities; track priority.value) {
+            <mat-option [value]="priority.value">{{ priority.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Due date</mat-label>
+        <input matInput [matDatepicker]="picker" [min]="minDueDate" formControlName="dueDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="picker" />
+        <mat-datepicker #picker />
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Notes</mat-label>
+      <textarea matInput formControlName="notes" rows="3" maxlength="2000"></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" [mat-dialog-close]="false">Cancel</button>
+  <button mat-flat-button type="submit" form="task-form">
+    {{ data.task ? 'Save changes' : 'Create task' }}
+  </button>
+</mat-dialog-actions>

@@ -3,12 +3,25 @@ import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
+import { Observable, finalize } from 'rxjs';
 
-import { TaskPriority, TaskStatus, UserTask } from '../../models';
+import { ConfirmationDialog } from '../../../../shared/components';
+import {
+  CreateUserTaskRequest,
+  TaskPriority,
+  TaskStatus,
+  UserTask,
+} from '../../models';
 import { UserTaskFilters, UserTaskService } from '../../services';
+import {
+  TaskFormDialog,
+  TaskFormDialogData,
+} from './task-form-dialog/task-form-dialog';
 
 @Component({
   selector: 'app-task-list',
@@ -16,6 +29,7 @@ import { UserTaskFilters, UserTaskService } from '../../services';
     DatePipe,
     MatButtonModule,
     MatCardModule,
+    MatDialogModule,
     MatProgressSpinnerModule,
     MatSelectModule,
     MatTableModule,
@@ -26,11 +40,15 @@ import { UserTaskFilters, UserTaskService } from '../../services';
 export class TaskList {
   private readonly userTaskService = inject(UserTaskService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
 
   protected readonly tasks = signal<UserTask[]>([]);
   protected readonly loading = signal(true);
   protected readonly errorMessage = signal<string | null>(null);
-  protected readonly displayedColumns = ['title', 'status', 'priority', 'dueDate'];
+  protected readonly actionTaskId = signal<number | null>(null);
+  protected readonly completedStatus = TaskStatus.Completed;
+  protected readonly displayedColumns = ['title', 'status', 'priority', 'dueDate', 'actions'];
 
   protected readonly statuses = [
     { value: TaskStatus.Pending, label: 'Pending' },
@@ -49,6 +67,66 @@ export class TaskList {
 
   constructor() {
     this.loadTasks();
+  }
+
+  protected openCreateDialog(): void {
+    this.dialog
+      .open<TaskFormDialog, TaskFormDialogData, CreateUserTaskRequest>(TaskFormDialog, {
+        data: {},
+        disableClose: true,
+      })
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((request) => {
+        if (request) {
+          this.runMutation(this.userTaskService.create(request), 'Task created.');
+        }
+      });
+  }
+
+  protected openEditDialog(task: UserTask): void {
+    this.dialog
+      .open<TaskFormDialog, TaskFormDialogData, CreateUserTaskRequest>(TaskFormDialog, {
+        data: { task },
+        disableClose: true,
+      })
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((request) => {
+        if (request) {
+          this.runMutation(
+            this.userTaskService.update({ id: task.id, ...request }),
+            'Task updated.',
+            task.id,
+          );
+        }
+      });
+  }
+
+  protected markCompleted(task: UserTask): void {
+    this.runMutation(
+      this.userTaskService.update({ id: task.id, status: TaskStatus.Completed }),
+      'Task marked as completed.',
+      task.id,
+    );
+  }
+
+  protected confirmDelete(task: UserTask): void {
+    this.dialog
+      .open(ConfirmationDialog, {
+        data: {
+          title: 'Delete task?',
+          message: `“${task.title}” will be removed from your task list.`,
+          confirmLabel: 'Delete',
+        },
+      })
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.runMutation(this.userTaskService.delete(task.id), 'Task deleted.', task.id);
+        }
+      });
   }
 
   protected applyFilters(status: TaskStatus | '', priority: TaskPriority | ''): void {
@@ -91,5 +169,30 @@ export class TaskList {
 
   protected priorityClass(priority: TaskPriority): string {
     return `priority-${TaskPriority[priority]?.toLowerCase() ?? 'unknown'}`;
+  }
+
+  private runMutation(
+    operation: Observable<UserTask | void>,
+    successMessage: string,
+    taskId: number | null = null,
+  ): void {
+    this.actionTaskId.set(taskId);
+
+    operation
+      .pipe(
+        finalize(() => this.actionTaskId.set(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: () => {
+          this.snackBar.open(successMessage, 'Dismiss', { duration: 3000 });
+          this.loadTasks();
+        },
+        error: () => {
+          this.snackBar.open('The task could not be saved. Please try again.', 'Dismiss', {
+            duration: 5000,
+          });
+        },
+      });
   }
 }

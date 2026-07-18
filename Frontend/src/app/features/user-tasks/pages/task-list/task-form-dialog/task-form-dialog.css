@@ -1,0 +1,25 @@
+mat-dialog-content {
+  width: min(36rem, 80vw);
+}
+
+form {
+  display: grid;
+  gap: 0.25rem;
+  padding-top: 0.5rem;
+}
+
+.form-row {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 36rem) {
+  mat-dialog-content {
+    width: auto;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
