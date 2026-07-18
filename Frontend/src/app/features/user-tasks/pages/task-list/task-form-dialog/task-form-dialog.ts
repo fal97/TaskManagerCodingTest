@@ -1,7 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import {
   MAT_DIALOG_DATA,
@@ -18,11 +17,16 @@ import { MatSelectModule } from '@angular/material/select';
 import {
   CreateUserTaskRequest,
   TaskPriority,
+  TaskStatus,
   UserTask,
 } from '../../../models';
 
 export interface TaskFormDialogData {
   task?: UserTask;
+}
+
+export interface TaskFormResult extends CreateUserTaskRequest {
+  status?: TaskStatus;
 }
 
 @Component({
@@ -36,7 +40,6 @@ export interface TaskFormDialogData {
     MatDialogTitle,
     MatFormFieldModule,
     MatInputModule,
-    MatNativeDateModule,
     MatSelectModule,
     ReactiveFormsModule,
   ],
@@ -56,10 +59,19 @@ export class TaskFormDialog {
     { value: TaskPriority.Critical, label: 'Critical' },
   ];
 
+  protected readonly statuses = [
+    { value: TaskStatus.Pending, label: 'Pending' },
+    { value: TaskStatus.InProgress, label: 'In progress' },
+    { value: TaskStatus.Completed, label: 'Completed' },
+    { value: TaskStatus.Cancelled, label: 'Cancelled' },
+    { value: TaskStatus.OnHold, label: 'On hold' },
+  ];
+
   protected readonly form = this.formBuilder.group({
     title: ['', [Validators.required, Validators.maxLength(200)]],
     description: ['', Validators.maxLength(2000)],
     priority: [TaskPriority.Normal, Validators.required],
+    status: [TaskStatus.Pending, Validators.required],
     dueDate: [null as Date | null],
     notes: ['', Validators.maxLength(2000)],
   });
@@ -72,6 +84,7 @@ export class TaskFormDialog {
         title: task.title,
         description: task.description ?? '',
         priority: task.priority,
+        status: task.status,
         dueDate: task.dueDate ? new Date(task.dueDate) : null,
         notes: task.notes ?? '',
       });
@@ -85,13 +98,17 @@ export class TaskFormDialog {
     }
 
     const value = this.form.getRawValue();
-    const request: CreateUserTaskRequest = {
+    const request: TaskFormResult = {
       title: value.title?.trim() ?? '',
       description: value.description?.trim() || null,
       priority: value.priority ?? TaskPriority.Normal,
       dueDate: value.dueDate?.toISOString() ?? null,
       notes: value.notes?.trim() || null,
     };
+
+    if (this.data.task) {
+      request.status = value.status ?? TaskStatus.Pending;
+    }
 
     this.dialogRef.close(request);
   }

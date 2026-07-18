@@ -21,6 +21,7 @@ import { UserTaskFilters, UserTaskService } from '../../services';
 import {
   TaskFormDialog,
   TaskFormDialogData,
+  TaskFormResult,
 } from './task-form-dialog/task-form-dialog';
 
 @Component({
@@ -71,7 +72,7 @@ export class TaskList {
 
   protected openCreateDialog(): void {
     this.dialog
-      .open<TaskFormDialog, TaskFormDialogData, CreateUserTaskRequest>(TaskFormDialog, {
+      .open<TaskFormDialog, TaskFormDialogData, TaskFormResult>(TaskFormDialog, {
         data: {},
         disableClose: true,
       })
@@ -86,7 +87,7 @@ export class TaskList {
 
   protected openEditDialog(task: UserTask): void {
     this.dialog
-      .open<TaskFormDialog, TaskFormDialogData, CreateUserTaskRequest>(TaskFormDialog, {
+      .open<TaskFormDialog, TaskFormDialogData, TaskFormResult>(TaskFormDialog, {
         data: { task },
         disableClose: true,
       })

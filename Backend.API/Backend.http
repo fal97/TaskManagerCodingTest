@@ -9,6 +9,10 @@ Accept: application/json
 GET {{Backend_HostAddress}}/api/tasks?status=0&priority=2
 Accept: application/json
 
+### Search, filter, and sort tasks
+GET {{Backend_HostAddress}}/api/tasks/search?searchTerm=review&status=0&priority=2&dueFrom=2026-07-01T00:00:00Z&dueTo=2026-12-31T23:59:59Z&sortBy=dueDate&sortDirection=asc
+Accept: application/json
+
 ### Get a task by ID
 GET {{Backend_HostAddress}}/api/tasks/{{TaskId}}
 Accept: application/json

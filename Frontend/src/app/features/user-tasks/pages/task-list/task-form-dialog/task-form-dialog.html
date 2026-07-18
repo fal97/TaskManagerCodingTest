@@ -1,4 +1,14 @@
-<h2 mat-dialog-title>{{ data.task ? 'Edit task' : 'Add task' }}</h2>
+<header class="dialog-header">
+  <p class="dialog-eyebrow">Task details</p>
+  <h2 mat-dialog-title>{{ data.task ? 'Edit task' : 'Add a new task' }}</h2>
+  <p class="dialog-subtitle">
+    {{
+      data.task
+        ? 'Update the task information, priority, due date, or current status.'
+        : 'Add the information needed to organize and track this task.'
+    }}
+  </p>
+</header>
 
 <mat-dialog-content>
   <form id="task-form" [formGroup]="form" (ngSubmit)="save()">
@@ -24,6 +34,17 @@
           }
         </mat-select>
       </mat-form-field>
+
+      @if (data.task) {
+        <mat-form-field appearance="outline">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="status">
+            @for (status of statuses; track status.value) {
+              <mat-option [value]="status.value">{{ status.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
 
       <mat-form-field appearance="outline">
         <mat-label>Due date</mat-label>

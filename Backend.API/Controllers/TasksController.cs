@@ -4,6 +4,7 @@ using Backend.Application.Features.Tasks.Commands.UpdateUserTask;
 using Backend.Application.Features.Tasks.DTOs;
 using Backend.Application.Features.Tasks.Queries.GetAllUserTasks;
 using Backend.Application.Features.Tasks.Queries.GetUserTask;
+using Backend.Application.Features.Tasks.Queries.SearchUserTasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +14,33 @@ namespace Backend.API.Controllers;
 [Route("api/tasks")]
 public sealed class TasksController(IMediator mediator) : ControllerBase
 {
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(List<UserTaskResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<List<UserTaskResponse>>> Search(
+        [FromQuery] string? searchTerm,
+        [FromQuery] int? status,
+        [FromQuery] int? priority,
+        [FromQuery] DateTime? dueFrom,
+        [FromQuery] DateTime? dueTo,
+        [FromQuery] string sortBy = "createdDate",
+        [FromQuery] string sortDirection = "desc",
+        CancellationToken cancellationToken = default)
+    {
+        var tasks = await mediator.Send(
+            new SearchUserTasksQuery(
+                searchTerm,
+                status,
+                priority,
+                dueFrom,
+                dueTo,
+                sortBy,
+                sortDirection),
+            cancellationToken);
+
+        return Ok(tasks);
+    }
+
     [HttpGet]
     [ProducesResponseType(typeof(List<UserTaskResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<UserTaskResponse>>> GetAll(
