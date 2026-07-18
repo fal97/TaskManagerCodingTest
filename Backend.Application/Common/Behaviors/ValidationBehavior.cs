@@ -1,3 +1,4 @@
+using Backend.Application.Common.Exceptions;
 using FluentValidation;
 using MediatR;
 
@@ -32,7 +33,16 @@ public sealed class ValidationBehavior<TRequest, TResponse>(
 
         if (failures.Count > 0)
         {
-            throw new ValidationException(failures);
+            var errors = failures
+                .GroupBy(failure => failure.PropertyName)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group
+                        .Select(failure => failure.ErrorMessage)
+                        .Distinct()
+                        .ToArray());
+
+            throw new RequestValidationException(errors);
         }
 
         return await next();

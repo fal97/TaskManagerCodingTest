@@ -1,4 +1,5 @@
 using Backend.Application.Abstractions;
+using Backend.Application.Common.Exceptions;
 using MediatR;
 
 namespace Backend.Application.Features.Tasks.Commands.DeleteUserTask;
@@ -26,14 +27,14 @@ public class DeleteUserTaskCommandHandler : IRequestHandler<DeleteUserTaskComman
     /// <param name="request">The delete user task command.</param>
     /// <param name="cancellationToken">Cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>A completed task.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when the task is not found.</exception>
+    /// <exception cref="UserTaskNotFoundException">Thrown when the task is not found.</exception>
     public async Task<Unit> Handle(
         DeleteUserTaskCommand request,
         CancellationToken cancellationToken)
     {
         // Get existing task
         var userTask = await _dbContext.UserTasks.FindAsync(new object[] { request.Id }, cancellationToken)
-            ?? throw new KeyNotFoundException($"Task with ID {request.Id} not found.");
+            ?? throw new UserTaskNotFoundException(request.Id);
 
         // Soft delete the task
         userTask.IsDeleted = true;

@@ -1,6 +1,41 @@
-@Backend_HostAddress = http://localhost:5207
+@Backend_HostAddress = https://localhost:7124
+@TaskId = 1
 
-GET {{Backend_HostAddress}}/weatherforecast/
+### Get all tasks
+GET {{Backend_HostAddress}}/api/tasks
 Accept: application/json
 
-###
+### Get tasks filtered by status and priority
+GET {{Backend_HostAddress}}/api/tasks?status=0&priority=2
+Accept: application/json
+
+### Get a task by ID
+GET {{Backend_HostAddress}}/api/tasks/{{TaskId}}
+Accept: application/json
+
+### Create a task
+POST {{Backend_HostAddress}}/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Complete coding test",
+  "description": "Finish the Task Manager API",
+  "priority": 2,
+  "dueDate": "2026-12-31T12:00:00Z",
+  "notes": "Add tests before submission"
+}
+
+### Update a task
+PUT {{Backend_HostAddress}}/api/tasks/{{TaskId}}
+Content-Type: application/json
+
+{
+  "title": "Complete and review coding test",
+  "status": 1,
+  "priority": 3,
+  "dueDate": "2026-12-31T12:00:00Z",
+  "notes": "Review validation and error responses"
+}
+
+### Delete a task
+DELETE {{Backend_HostAddress}}/api/tasks/{{TaskId}}

@@ -1,4 +1,5 @@
 using Backend.Application.Abstractions;
+using Backend.Application.Common.Exceptions;
 using Backend.Application.Features.Tasks.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +28,7 @@ public class GetUserTaskQueryHandler : IRequestHandler<GetUserTaskQuery, UserTas
     /// <param name="request">The get user task query.</param>
     /// <param name="cancellationToken">Cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The user task as a response DTO.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when the task is not found.</exception>
+    /// <exception cref="UserTaskNotFoundException">Thrown when the task is not found.</exception>
     public async Task<UserTaskResponse> Handle(
         GetUserTaskQuery request,
         CancellationToken cancellationToken)
@@ -36,7 +37,7 @@ public class GetUserTaskQueryHandler : IRequestHandler<GetUserTaskQuery, UserTas
         var userTask = await _dbContext.UserTasks
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken)
-            ?? throw new KeyNotFoundException($"Task with ID {request.Id} not found.");
+            ?? throw new UserTaskNotFoundException(request.Id);
 
         // Map to response DTO
         return MapToResponse(userTask);

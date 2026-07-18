@@ -1,4 +1,5 @@
 using Backend.Application.Abstractions;
+using Backend.Application.Common.Exceptions;
 using Backend.Application.Features.Tasks.DTOs;
 using MediatR;
 
@@ -26,14 +27,14 @@ public class UpdateUserTaskCommandHandler : IRequestHandler<UpdateUserTaskComman
     /// <param name="request">The update user task command.</param>
     /// <param name="cancellationToken">Cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The updated user task as a response DTO.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when the task is not found.</exception>
+    /// <exception cref="UserTaskNotFoundException">Thrown when the task is not found.</exception>
     public async Task<UserTaskResponse> Handle(
         UpdateUserTaskCommand request,
         CancellationToken cancellationToken)
     {
         // Get existing task
         var userTask = await _dbContext.UserTasks.FindAsync(new object[] { request.Request.Id }, cancellationToken)
-            ?? throw new KeyNotFoundException($"Task with ID {request.Request.Id} not found.");
+            ?? throw new UserTaskNotFoundException(request.Request.Id);
 
         // Update properties if provided
         if (!string.IsNullOrEmpty(request.Request.Title))

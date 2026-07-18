@@ -1,15 +1,15 @@
 using Backend.Application.Common.Behaviors;
+using Backend.Application.Common.Exceptions;
 using Backend.Application.Features.Tasks.Commands.CreateUserTask;
 using Backend.Application.Features.Tasks.DTOs;
 using FluentAssertions;
-using FluentValidation;
 
 namespace Backend.Tests.Application.Common.Behaviors;
 
 public class ValidationBehaviorTests
 {
     [Fact]
-    public async Task Handle_InvalidCommand_ThrowsValidationExceptionBeforeHandlerRuns()
+    public async Task Handle_InvalidCommand_ThrowsRequestValidationExceptionBeforeHandlerRuns()
     {
         var command = new CreateUserTaskCommand(new CreateUserTaskRequest
         {
@@ -29,11 +29,9 @@ public class ValidationBehaviorTests
             },
             CancellationToken.None);
 
-        var exception = await act.Should().ThrowAsync<ValidationException>();
-        exception.Which.Errors.Should().Contain(error =>
-            error.PropertyName == "Request.Title" && error.ErrorMessage == "Title is required.");
-        exception.Which.Errors.Should().Contain(error =>
-            error.PropertyName == "Request.Priority");
+        var exception = await act.Should().ThrowAsync<RequestValidationException>();
+        exception.Which.Errors["Request.Title"].Should().Contain("Title is required.");
+        exception.Which.Errors.Should().ContainKey("Request.Priority");
         handlerWasCalled.Should().BeFalse();
     }
 
