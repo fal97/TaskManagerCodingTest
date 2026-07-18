@@ -6,19 +6,6 @@ namespace Backend.Application.Features.Tasks.Commands.CreateUserTask;
 /// <summary>
 /// Command to create a new user task.
 /// </summary>
-public class CreateUserTaskCommand : IRequest<UserTaskResponse>
-{
-    /// <summary>
-    /// Initializes a new instance of the CreateUserTaskCommand.
-    /// </summary>
-    /// <param name="request">The create task request containing task details.</param>
-    public CreateUserTaskCommand(CreateUserTaskRequest request)
-    {
-        Request = request;
-    }
-
-    /// <summary>
-    /// The create task request containing task details.
-    /// </summary>
-    public CreateUserTaskRequest Request { get; }
-}
+/// <param name="Request">The create task request containing task details.</param>
+public sealed record CreateUserTaskCommand(CreateUserTaskRequest Request)
+    : IRequest<UserTaskResponse>;
