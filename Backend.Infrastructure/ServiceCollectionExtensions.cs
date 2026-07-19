@@ -2,6 +2,7 @@ using Backend.Application.Abstractions;
 using Backend.Application.Common.Behaviors;
 using Backend.Application.Features.Tasks.Commands.CreateUserTask;
 using Backend.Infrastructure.Persistence;
+using Backend.Infrastructure.Authentication;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +40,21 @@ public static class ServiceCollectionExtensions
         // Register IApplicationDbContext interface for dependency injection
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<ApplicationDbContext>());
+
+        var authenticationSection = configuration.GetSection(
+            SimpleAuthenticationOptions.SectionName);
+        services.Configure<SimpleAuthenticationOptions>(options =>
+        {
+            options.Username = authenticationSection[nameof(options.Username)] ?? string.Empty;
+            options.PasswordHash = authenticationSection[nameof(options.PasswordHash)] ?? string.Empty;
+            options.PasswordSalt = authenticationSection[nameof(options.PasswordSalt)] ?? string.Empty;
+            options.Iterations = int.TryParse(
+                authenticationSection[nameof(options.Iterations)],
+                out var iterations)
+                    ? iterations
+                    : 100_000;
+        });
+        services.AddSingleton<IUserCredentialValidator, SimpleUserCredentialValidator>();
 
         // Register MediatR for CQRS pattern
         services.AddMediatR(cfg =>

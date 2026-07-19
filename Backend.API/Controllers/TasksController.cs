@@ -6,11 +6,13 @@ using Backend.Application.Features.Tasks.Queries.GetAllUserTasks;
 using Backend.Application.Features.Tasks.Queries.GetUserTask;
 using Backend.Application.Features.Tasks.Queries.SearchUserTasks;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.API.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/tasks")]
 public sealed class TasksController(IMediator mediator) : ControllerBase
 {

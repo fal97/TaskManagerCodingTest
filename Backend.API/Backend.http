@@ -1,6 +1,22 @@
 @Backend_HostAddress = https://localhost:7124
 @TaskId = 1
 
+### Login (development credentials: admin / TaskManager123!)
+POST {{Backend_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "TaskManager123!"
+}
+
+### Current authenticated user
+GET {{Backend_HostAddress}}/api/auth/me
+Accept: application/json
+
+### Logout
+POST {{Backend_HostAddress}}/api/auth/logout
+
 ### Get all tasks
 GET {{Backend_HostAddress}}/api/tasks
 Accept: application/json
