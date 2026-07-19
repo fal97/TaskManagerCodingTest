@@ -28,6 +28,14 @@ public sealed class GlobalExceptionHandlingMiddleware(
                 "Resource not found",
                 exception.Message);
         }
+        catch (InvalidCredentialsException exception)
+        {
+            await WriteErrorAsync(
+                context,
+                StatusCodes.Status401Unauthorized,
+                "Authentication failed",
+                exception.Message);
+        }
         catch (Exception exception)
         {
             logger.LogError(

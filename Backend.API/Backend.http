@@ -1,12 +1,32 @@
 @Backend_HostAddress = https://localhost:7124
 @TaskId = 1
 
+### Login (development credentials: admin / TaskManager123!)
+POST {{Backend_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "TaskManager123!"
+}
+
+### Current authenticated user
+GET {{Backend_HostAddress}}/api/auth/me
+Accept: application/json
+
+### Logout
+POST {{Backend_HostAddress}}/api/auth/logout
+
 ### Get all tasks
 GET {{Backend_HostAddress}}/api/tasks
 Accept: application/json
 
 ### Get tasks filtered by status and priority
 GET {{Backend_HostAddress}}/api/tasks?status=0&priority=2
+Accept: application/json
+
+### Search, filter, and sort tasks
+GET {{Backend_HostAddress}}/api/tasks/search?searchTerm=review&status=0&priority=2&dueFrom=2026-07-01T00:00:00Z&dueTo=2026-12-31T23:59:59Z&sortBy=dueDate&sortDirection=asc
 Accept: application/json
 
 ### Get a task by ID

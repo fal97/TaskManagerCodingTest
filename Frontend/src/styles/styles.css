@@ -1,0 +1,119 @@
+html {
+  background: #eef2f6;
+  color: #172033;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.mat-mdc-card {
+  color: #172033;
+}
+
+.mat-mdc-form-field,
+.mat-mdc-text-field-wrapper,
+.mat-mdc-select-panel,
+.mat-mdc-autocomplete-panel {
+  background: #ffffff !important;
+}
+
+input.mat-mdc-input-element,
+textarea.mat-mdc-input-element {
+  box-sizing: border-box;
+  padding-inline: 0.5rem !important;
+}
+
+.mat-mdc-select-panel {
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 12px 30px rgb(15 23 42 / 20%) !important;
+  padding-block: 0.375rem !important;
+}
+
+.mat-mdc-option {
+  background: #ffffff !important;
+  color: #172033 !important;
+  padding-inline: 1rem !important;
+}
+
+.mat-mdc-select-value {
+  padding-inline: 0.25rem 0.5rem;
+}
+
+.mat-mdc-select-arrow-wrapper {
+  margin-inline-end: 0.75rem;
+}
+
+.mat-mdc-option:hover,
+.mat-mdc-option.mdc-list-item--selected {
+  background: #dff3f1 !important;
+}
+
+.mat-mdc-unelevated-button:not(:disabled) {
+  background: #0f766e !important;
+  color: #ffffff !important;
+}
+
+.mat-mdc-outlined-button:not(:disabled) {
+  background: #ffffff !important;
+  border-color: #0f766e !important;
+  color: #0f615b !important;
+}
+
+.mat-mdc-dialog-surface {
+  background: #ffffff !important;
+  color: #172033 !important;
+}
+
+.mat-datepicker-content,
+.mat-calendar {
+  background: #ffffff !important;
+  color: #172033 !important;
+}
+
+.mat-datepicker-content {
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 14px 36px rgb(15 23 42 / 24%) !important;
+}
+
+.mat-calendar-table-header,
+.mat-calendar-body-label,
+.mat-calendar-body-cell-content,
+.mat-calendar-period-button,
+.mat-calendar-previous-button,
+.mat-calendar-next-button {
+  color: #172033 !important;
+}
+
+.mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover
+  .mat-calendar-body-cell-content {
+  background: #dff3f1 !important;
+}
+
+.mat-calendar-body-selected {
+  background: #0f766e !important;
+  color: #ffffff !important;
+}
+
+.mat-calendar-body-today:not(.mat-calendar-body-selected) {
+  border-color: #0f766e !important;
+}
+
+.mat-datepicker-toggle button {
+  color: #17324d !important;
+  margin-inline-end: 0.5rem;
+}
+
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color: #17324d;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+}
+
+body {
+  margin: 0;
+  min-width: 20rem;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
