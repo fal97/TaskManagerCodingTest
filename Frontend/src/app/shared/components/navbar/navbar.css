@@ -21,9 +21,17 @@
 }
 
 nav {
+  align-items: center;
   display: flex;
   gap: 0.25rem;
   margin-left: auto;
+}
+
+.user-name {
+  color: #dbeafe;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding-inline: 0.5rem;
 }
 
 nav a[mat-button] {
