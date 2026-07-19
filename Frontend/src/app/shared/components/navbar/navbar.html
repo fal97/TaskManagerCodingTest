@@ -1,0 +1,15 @@
+<mat-toolbar class="navbar">
+  <a class="brand" routerLink="/" aria-label="Task Manager home">
+    Task Manager
+  </a>
+
+  <nav aria-label="Primary navigation">
+    @if (authenticationService.currentUser(); as user) {
+      <a mat-button routerLink="/tasks" routerLinkActive="active-link">Tasks</a>
+      <span class="user-name">{{ user.username }}</span>
+      <button mat-button type="button" (click)="logout()">Sign out</button>
+    } @else {
+      <a mat-button routerLink="/login" routerLinkActive="active-link">Sign in</a>
+    }
+  </nav>
+</mat-toolbar>
