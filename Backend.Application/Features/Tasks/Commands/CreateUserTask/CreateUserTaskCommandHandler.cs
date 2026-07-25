@@ -11,14 +11,18 @@ namespace Backend.Application.Features.Tasks.Commands.CreateUserTask;
 public class CreateUserTaskCommandHandler : IRequestHandler<CreateUserTaskCommand, UserTaskResponse>
 {
     private readonly IApplicationDbContext _dbContext;
+    private readonly IEmailSender _emailSender;
 
     /// <summary>
     /// Initializes a new instance of the CreateUserTaskCommandHandler.
     /// </summary>
     /// <param name="dbContext">The application database context.</param>
-    public CreateUserTaskCommandHandler(IApplicationDbContext dbContext)
+    public CreateUserTaskCommandHandler(
+        IApplicationDbContext dbContext,
+        IEmailSender emailSender)
     {
         _dbContext = dbContext;
+        _emailSender = emailSender;
     }
 
     /// <summary>
@@ -46,8 +50,10 @@ public class CreateUserTaskCommandHandler : IRequestHandler<CreateUserTaskComman
         _dbContext.UserTasks.Add(userTask);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        // Map to response DTO
-        return MapToResponse(userTask);
+        var response = MapToResponse(userTask);
+        await _emailSender.SendTaskCreatedAsync(response, cancellationToken);
+
+        return response;
     }
 
     /// <summary>

@@ -3,6 +3,7 @@ using Backend.Application.Common.Behaviors;
 using Backend.Application.Features.Tasks.Commands.CreateUserTask;
 using Backend.Infrastructure.Persistence;
 using Backend.Infrastructure.Authentication;
+using Backend.Infrastructure.Email;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -55,6 +56,52 @@ public static class ServiceCollectionExtensions
                     : 100_000;
         });
         services.AddSingleton<IUserCredentialValidator, SimpleUserCredentialValidator>();
+
+        var emailSection = configuration.GetSection(EmailOptions.SectionName);
+        services.Configure<EmailOptions>(options =>
+        {
+            options.Enabled = bool.TryParse(
+                emailSection[nameof(options.Enabled)],
+                out var enabled) && enabled;
+            options.Host = emailSection[nameof(options.Host)] ?? string.Empty;
+            options.Port = int.TryParse(
+                emailSection[nameof(options.Port)],
+                out var port) ? port : 587;
+            options.UseSsl = !bool.TryParse(
+                emailSection[nameof(options.UseSsl)],
+                out var useSsl) || useSsl;
+            options.Username = emailSection[nameof(options.Username)] ?? string.Empty;
+            options.Password = emailSection[nameof(options.Password)] ?? string.Empty;
+            options.FromAddress =
+                emailSection[nameof(options.FromAddress)] ?? string.Empty;
+            options.FromName =
+                emailSection[nameof(options.FromName)] ?? "Task Manager";
+            options.RecipientAddress =
+                emailSection[nameof(options.RecipientAddress)] ?? string.Empty;
+        });
+
+        var emailEnabled = bool.TryParse(
+            emailSection[nameof(EmailOptions.Enabled)],
+            out var enabled) && enabled;
+        if (emailEnabled)
+        {
+            var requiredSettings = new[]
+            {
+                nameof(EmailOptions.Host),
+                nameof(EmailOptions.FromAddress),
+                nameof(EmailOptions.RecipientAddress)
+            };
+            var missingSetting = requiredSettings.FirstOrDefault(
+                setting => string.IsNullOrWhiteSpace(emailSection[setting]));
+
+            if (missingSetting is not null)
+            {
+                throw new InvalidOperationException(
+                    $"Email:{missingSetting} is required when email is enabled.");
+            }
+        }
+
+        services.AddSingleton<IEmailSender, SmtpEmailSender>();
 
         // Register MediatR for CQRS pattern
         services.AddMediatR(cfg =>
