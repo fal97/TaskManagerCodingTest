@@ -7,4 +7,8 @@ public sealed class ServiceBusOptions
     public string ConnectionString { get; set; } = string.Empty;
 
     public string QueueName { get; set; } = "task-created-email";
+
+    public int MaxRetryAttempts { get; set; } = 3;
+
+    public int InitialRetryDelaySeconds { get; set; } = 5;
 }

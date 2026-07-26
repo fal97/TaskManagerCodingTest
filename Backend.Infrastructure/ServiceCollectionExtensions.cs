@@ -126,10 +126,35 @@ public static class ServiceCollectionExtensions
                     "ServiceBus:QueueName is required when email is enabled.");
             }
 
+            var maxRetryAttempts = int.TryParse(
+                serviceBusSection[nameof(ServiceBusOptions.MaxRetryAttempts)],
+                out var configuredMaxRetryAttempts)
+                    ? configuredMaxRetryAttempts
+                    : 3;
+            var initialRetryDelaySeconds = int.TryParse(
+                serviceBusSection[nameof(ServiceBusOptions.InitialRetryDelaySeconds)],
+                out var configuredRetryDelaySeconds)
+                    ? configuredRetryDelaySeconds
+                    : 5;
+
+            if (maxRetryAttempts < 0)
+            {
+                throw new InvalidOperationException(
+                    "ServiceBus:MaxRetryAttempts must be zero or greater.");
+            }
+
+            if (initialRetryDelaySeconds <= 0)
+            {
+                throw new InvalidOperationException(
+                    "ServiceBus:InitialRetryDelaySeconds must be greater than zero.");
+            }
+
             services.Configure<ServiceBusOptions>(options =>
             {
                 options.ConnectionString = serviceBusConnectionString;
                 options.QueueName = queueName;
+                options.MaxRetryAttempts = maxRetryAttempts;
+                options.InitialRetryDelaySeconds = initialRetryDelaySeconds;
             });
             services.AddSingleton(new ServiceBusClient(serviceBusConnectionString));
             services.AddSingleton<
