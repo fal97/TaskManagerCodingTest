@@ -4,6 +4,8 @@ using Backend.Application.Features.Tasks.Commands.CreateUserTask;
 using Backend.Infrastructure.Persistence;
 using Backend.Infrastructure.Authentication;
 using Backend.Infrastructure.Email;
+using Backend.Infrastructure.Messaging;
+using Azure.Messaging.ServiceBus;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -102,10 +104,45 @@ public static class ServiceCollectionExtensions
         }
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
-        services.AddSingleton<TaskCreatedEmailQueue>();
-        services.AddSingleton<ITaskCreatedEmailQueue>(provider =>
-            provider.GetRequiredService<TaskCreatedEmailQueue>());
-        services.AddHostedService<EmailBackgroundService>();
+
+        if (emailEnabled)
+        {
+            var serviceBusSection = configuration.GetSection(
+                ServiceBusOptions.SectionName);
+            var serviceBusConnectionString =
+                serviceBusSection[nameof(ServiceBusOptions.ConnectionString)];
+            var queueName =
+                serviceBusSection[nameof(ServiceBusOptions.QueueName)];
+
+            if (string.IsNullOrWhiteSpace(serviceBusConnectionString))
+            {
+                throw new InvalidOperationException(
+                    "ServiceBus:ConnectionString is required when email is enabled.");
+            }
+
+            if (string.IsNullOrWhiteSpace(queueName))
+            {
+                throw new InvalidOperationException(
+                    "ServiceBus:QueueName is required when email is enabled.");
+            }
+
+            services.Configure<ServiceBusOptions>(options =>
+            {
+                options.ConnectionString = serviceBusConnectionString;
+                options.QueueName = queueName;
+            });
+            services.AddSingleton(new ServiceBusClient(serviceBusConnectionString));
+            services.AddSingleton<
+                ITaskCreatedEmailPublisher,
+                TaskCreatedEmailPublisher>();
+            services.AddHostedService<EmailBackgroundService>();
+        }
+        else
+        {
+            services.AddSingleton<
+                ITaskCreatedEmailPublisher,
+                NoOpTaskCreatedEmailPublisher>();
+        }
 
         // Register MediatR for CQRS pattern
         services.AddMediatR(cfg =>

@@ -11,7 +11,7 @@ namespace Backend.Application.Features.Tasks.Commands.CreateUserTask;
 public class CreateUserTaskCommandHandler : IRequestHandler<CreateUserTaskCommand, UserTaskResponse>
 {
     private readonly IApplicationDbContext _dbContext;
-    private readonly ITaskCreatedEmailQueue _emailQueue;
+    private readonly ITaskCreatedEmailPublisher _emailPublisher;
 
     /// <summary>
     /// Initializes a new instance of the CreateUserTaskCommandHandler.
@@ -19,10 +19,10 @@ public class CreateUserTaskCommandHandler : IRequestHandler<CreateUserTaskComman
     /// <param name="dbContext">The application database context.</param>
     public CreateUserTaskCommandHandler(
         IApplicationDbContext dbContext,
-        ITaskCreatedEmailQueue emailQueue)
+        ITaskCreatedEmailPublisher emailPublisher)
     {
         _dbContext = dbContext;
-        _emailQueue = emailQueue;
+        _emailPublisher = emailPublisher;
     }
 
     /// <summary>
@@ -51,7 +51,7 @@ public class CreateUserTaskCommandHandler : IRequestHandler<CreateUserTaskComman
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         var response = MapToResponse(userTask);
-        await _emailQueue.QueueAsync(response, cancellationToken);
+        await _emailPublisher.PublishAsync(response, cancellationToken);
 
         return response;
     }

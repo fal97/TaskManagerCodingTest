@@ -3,11 +3,11 @@ using Backend.Application.Features.Tasks.DTOs;
 namespace Backend.Application.Abstractions;
 
 /// <summary>
-/// Queues task-created email notifications for background processing.
+/// Publishes task-created email notifications for background processing.
 /// </summary>
-public interface ITaskCreatedEmailQueue
+public interface ITaskCreatedEmailPublisher
 {
-    ValueTask QueueAsync(
+    Task PublishAsync(
         UserTaskResponse userTask,
         CancellationToken cancellationToken);
 }
