@@ -102,6 +102,10 @@ public static class ServiceCollectionExtensions
         }
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
+        services.AddSingleton<TaskCreatedEmailQueue>();
+        services.AddSingleton<ITaskCreatedEmailQueue>(provider =>
+            provider.GetRequiredService<TaskCreatedEmailQueue>());
+        services.AddHostedService<EmailBackgroundService>();
 
         // Register MediatR for CQRS pattern
         services.AddMediatR(cfg =>
