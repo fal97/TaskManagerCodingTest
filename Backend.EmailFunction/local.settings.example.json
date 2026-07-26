@@ -1,0 +1,20 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "ServiceBusConnection": "<service-bus-connection-string>",
+    "ServiceBusQueueName": "task-created-email",
+    "ServiceBusMaxRetryAttempts": "3",
+    "ServiceBusInitialRetryDelaySeconds": "5",
+    "Email__Enabled": "true",
+    "Email__Host": "smtp.gmail.com",
+    "Email__Port": "587",
+    "Email__UseSsl": "true",
+    "Email__Username": "<gmail-address>",
+    "Email__Password": "<gmail-app-password>",
+    "Email__FromAddress": "<gmail-address>",
+    "Email__FromName": "Task Manager",
+    "Email__RecipientAddress": "<recipient-address>"
+  }
+}

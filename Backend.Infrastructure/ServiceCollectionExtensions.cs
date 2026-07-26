@@ -3,7 +3,6 @@ using Backend.Application.Common.Behaviors;
 using Backend.Application.Features.Tasks.Commands.CreateUserTask;
 using Backend.Infrastructure.Persistence;
 using Backend.Infrastructure.Authentication;
-using Backend.Infrastructure.Email;
 using Backend.Infrastructure.Messaging;
 using Azure.Messaging.ServiceBus;
 using FluentValidation;
@@ -59,56 +58,14 @@ public static class ServiceCollectionExtensions
         });
         services.AddSingleton<IUserCredentialValidator, SimpleUserCredentialValidator>();
 
-        var emailSection = configuration.GetSection(EmailOptions.SectionName);
-        services.Configure<EmailOptions>(options =>
-        {
-            options.Enabled = bool.TryParse(
-                emailSection[nameof(options.Enabled)],
-                out var enabled) && enabled;
-            options.Host = emailSection[nameof(options.Host)] ?? string.Empty;
-            options.Port = int.TryParse(
-                emailSection[nameof(options.Port)],
-                out var port) ? port : 587;
-            options.UseSsl = !bool.TryParse(
-                emailSection[nameof(options.UseSsl)],
-                out var useSsl) || useSsl;
-            options.Username = emailSection[nameof(options.Username)] ?? string.Empty;
-            options.Password = emailSection[nameof(options.Password)] ?? string.Empty;
-            options.FromAddress =
-                emailSection[nameof(options.FromAddress)] ?? string.Empty;
-            options.FromName =
-                emailSection[nameof(options.FromName)] ?? "Task Manager";
-            options.RecipientAddress =
-                emailSection[nameof(options.RecipientAddress)] ?? string.Empty;
-        });
-
-        var emailEnabled = bool.TryParse(
-            emailSection[nameof(EmailOptions.Enabled)],
+        var serviceBusSection = configuration.GetSection(
+            ServiceBusOptions.SectionName);
+        var serviceBusEnabled = bool.TryParse(
+            serviceBusSection[nameof(ServiceBusOptions.Enabled)],
             out var enabled) && enabled;
-        if (emailEnabled)
+
+        if (serviceBusEnabled)
         {
-            var requiredSettings = new[]
-            {
-                nameof(EmailOptions.Host),
-                nameof(EmailOptions.FromAddress),
-                nameof(EmailOptions.RecipientAddress)
-            };
-            var missingSetting = requiredSettings.FirstOrDefault(
-                setting => string.IsNullOrWhiteSpace(emailSection[setting]));
-
-            if (missingSetting is not null)
-            {
-                throw new InvalidOperationException(
-                    $"Email:{missingSetting} is required when email is enabled.");
-            }
-        }
-
-        services.AddSingleton<IEmailSender, SmtpEmailSender>();
-
-        if (emailEnabled)
-        {
-            var serviceBusSection = configuration.GetSection(
-                ServiceBusOptions.SectionName);
             var serviceBusConnectionString =
                 serviceBusSection[nameof(ServiceBusOptions.ConnectionString)];
             var queueName =
@@ -126,41 +83,16 @@ public static class ServiceCollectionExtensions
                     "ServiceBus:QueueName is required when email is enabled.");
             }
 
-            var maxRetryAttempts = int.TryParse(
-                serviceBusSection[nameof(ServiceBusOptions.MaxRetryAttempts)],
-                out var configuredMaxRetryAttempts)
-                    ? configuredMaxRetryAttempts
-                    : 3;
-            var initialRetryDelaySeconds = int.TryParse(
-                serviceBusSection[nameof(ServiceBusOptions.InitialRetryDelaySeconds)],
-                out var configuredRetryDelaySeconds)
-                    ? configuredRetryDelaySeconds
-                    : 5;
-
-            if (maxRetryAttempts < 0)
-            {
-                throw new InvalidOperationException(
-                    "ServiceBus:MaxRetryAttempts must be zero or greater.");
-            }
-
-            if (initialRetryDelaySeconds <= 0)
-            {
-                throw new InvalidOperationException(
-                    "ServiceBus:InitialRetryDelaySeconds must be greater than zero.");
-            }
-
             services.Configure<ServiceBusOptions>(options =>
             {
+                options.Enabled = true;
                 options.ConnectionString = serviceBusConnectionString;
                 options.QueueName = queueName;
-                options.MaxRetryAttempts = maxRetryAttempts;
-                options.InitialRetryDelaySeconds = initialRetryDelaySeconds;
             });
             services.AddSingleton(new ServiceBusClient(serviceBusConnectionString));
             services.AddSingleton<
                 ITaskCreatedEmailPublisher,
                 TaskCreatedEmailPublisher>();
-            services.AddHostedService<EmailBackgroundService>();
         }
         else
         {

@@ -189,6 +189,37 @@ GET /api/tasks/search?searchTerm=review&priority=2&sortBy=dueDate&sortDirection=
 
 Additional request examples are available in `Backend.API/Backend.http`.
 
+## Email Azure Function
+
+Task-created emails are processed by the separate `Backend.EmailFunction`
+project. The API only publishes messages to the `task-created-email` Azure
+Service Bus queue; the Function consumes them and sends email through SMTP.
+
+For the API, enable publishing and provide the Service Bus connection through
+user secrets or environment variables:
+
+```powershell
+dotnet user-secrets init --project Backend.API
+dotnet user-secrets set "ServiceBus:Enabled" "true" --project Backend.API
+dotnet user-secrets set "ServiceBus:ConnectionString" "<connection-string>" --project Backend.API
+```
+
+For local Function development, copy
+`Backend.EmailFunction/local.settings.example.json` to
+`Backend.EmailFunction/local.settings.json` and replace the placeholders.
+`local.settings.json` is ignored by Git.
+
+Run the Function with Azure Functions Core Tools:
+
+```powershell
+cd Backend.EmailFunction
+func start
+```
+
+In Azure, add the same values from the example file as Function App application
+settings. The Function uses scheduled retries with exponential delays and moves
+permanently failed messages to the queue's dead-letter subqueue.
+
 ## Run tests
 
 ### Backend
