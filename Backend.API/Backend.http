@@ -1,5 +1,6 @@
 @Backend_HostAddress = https://localhost:7124
 @TaskId = 1
+@AccessToken = paste-login-access-token-here
 
 ### Login (development credentials: admin / TaskManager123!)
 POST {{Backend_HostAddress}}/api/auth/login
@@ -13,29 +14,36 @@ Content-Type: application/json
 ### Current authenticated user
 GET {{Backend_HostAddress}}/api/auth/me
 Accept: application/json
+Authorization: Bearer {{AccessToken}}
 
 ### Logout
 POST {{Backend_HostAddress}}/api/auth/logout
+Authorization: Bearer {{AccessToken}}
 
 ### Get all tasks
 GET {{Backend_HostAddress}}/api/tasks
 Accept: application/json
+Authorization: Bearer {{AccessToken}}
 
 ### Get tasks filtered by status and priority
 GET {{Backend_HostAddress}}/api/tasks?status=0&priority=2
 Accept: application/json
+Authorization: Bearer {{AccessToken}}
 
 ### Search, filter, and sort tasks
 GET {{Backend_HostAddress}}/api/tasks/search?searchTerm=review&status=0&priority=2&dueFrom=2026-07-01T00:00:00Z&dueTo=2026-12-31T23:59:59Z&sortBy=dueDate&sortDirection=asc
 Accept: application/json
+Authorization: Bearer {{AccessToken}}
 
 ### Get a task by ID
 GET {{Backend_HostAddress}}/api/tasks/{{TaskId}}
 Accept: application/json
+Authorization: Bearer {{AccessToken}}
 
 ### Create a task
 POST {{Backend_HostAddress}}/api/tasks
 Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
 
 {
   "title": "Complete coding test",
@@ -48,6 +56,7 @@ Content-Type: application/json
 ### Update a task
 PUT {{Backend_HostAddress}}/api/tasks/{{TaskId}}
 Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
 
 {
   "title": "Complete and review coding test",
@@ -59,3 +68,4 @@ Content-Type: application/json
 
 ### Delete a task
 DELETE {{Backend_HostAddress}}/api/tasks/{{TaskId}}
+Authorization: Bearer {{AccessToken}}

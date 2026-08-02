@@ -11,7 +11,7 @@ Task Manager is a full-stack task management application built with ASP.NET Core
 - SQL Server
 - MediatR and CQRS
 - FluentValidation
-- Cookie-based authentication
+- JWT bearer authentication
 - xUnit, Moq, and FluentAssertions
 
 ### Frontend
@@ -26,7 +26,7 @@ Task Manager is a full-stack task management application built with ASP.NET Core
 
 ```text
 TaskManagerCodingTest/
-├── Backend.API/              # Controllers, middleware, authentication cookie, configuration
+├── Backend.API/              # Controllers, middleware, bearer authentication, configuration
 ├── Backend.Application/      # CQRS commands, queries, handlers, validators, and DTOs
 ├── Backend.Domain/           # Domain entities and enums
 ├── Backend.Infrastructure/   # EF Core, SQL Server, authentication, migrations, and SQL script
@@ -117,7 +117,9 @@ dotnet dev-certs https --trust
 
 ## Authentication
 
-The application uses an HTTP-only authentication cookie rather than JWT tokens.
+The application uses JWT bearer authentication. A successful login returns a
+short-lived access token, which the frontend stores in session storage and sends
+in the `Authorization: Bearer <token>` header for protected API requests.
 
 Development credentials:
 
@@ -136,7 +138,9 @@ POST /api/auth/logout
 GET  /api/auth/me
 ```
 
-All task endpoints require an authenticated session.
+All task endpoints require a valid bearer token. The development access token
+expires after 15 minutes. Signing out removes the token from the browser; because
+access tokens are stateless, an issued token remains valid until it expires.
 
 ## Run the frontend
 
@@ -160,7 +164,8 @@ The development API URL is configured in:
 Frontend/src/environments/environment.development.ts
 ```
 
-If the backend address changes, update `apiBaseUrl` in that file. The frontend sends cookies with API requests, so the backend must remain configured to allow the frontend origin with credentials.
+If the backend address changes, update `apiBaseUrl` in that file. The backend CORS
+configuration must allow the frontend origin and the `Authorization` header.
 
 ## Task API
 

@@ -58,6 +58,31 @@ public static class ServiceCollectionExtensions
         });
         services.AddSingleton<IUserCredentialValidator, SimpleUserCredentialValidator>();
 
+        var jwtSection = configuration.GetSection(JwtOptions.SectionName);
+        services.Configure<JwtOptions>(options =>
+        {
+            options.Issuer = jwtSection[nameof(options.Issuer)] ?? string.Empty;
+            options.Audience = jwtSection[nameof(options.Audience)] ?? string.Empty;
+            options.SigningKey = jwtSection[nameof(options.SigningKey)] ?? string.Empty;
+            options.AccessTokenMinutes = int.TryParse(
+                jwtSection[nameof(options.AccessTokenMinutes)],
+                out var accessTokenMinutes)
+                    ? accessTokenMinutes
+                    : 15;
+        });
+        services
+            .AddOptions<JwtOptions>()
+            .Validate(options => !string.IsNullOrWhiteSpace(options.Issuer),
+                "Jwt:Issuer is required.")
+            .Validate(options => !string.IsNullOrWhiteSpace(options.Audience),
+                "Jwt:Audience is required.")
+            .Validate(options => options.SigningKey.Length >= 32,
+                "Jwt:SigningKey must be at least 32 characters.")
+            .Validate(options => options.AccessTokenMinutes > 0,
+                "Jwt:AccessTokenMinutes must be greater than zero.")
+            .ValidateOnStart();
+        services.AddSingleton<IAccessTokenGenerator, JwtAccessTokenGenerator>();
+
         var serviceBusSection = configuration.GetSection(
             ServiceBusOptions.SectionName);
         var serviceBusEnabled = bool.TryParse(
