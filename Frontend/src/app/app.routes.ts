@@ -17,6 +17,14 @@ export const routes: Routes = [
         (routes) => routes.AUTHENTICATION_ROUTES,
       ),
   },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/authentication/pages/register/register').then(
+        (component) => component.Register,
+      ),
+    title: 'Register | Task Manager',
+  },
   { path: '', pathMatch: 'full', redirectTo: 'tasks' },
   { path: '**', redirectTo: 'tasks' },
 ];

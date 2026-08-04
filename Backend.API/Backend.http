@@ -2,7 +2,17 @@
 @TaskId = 1
 @AccessToken = paste-login-access-token-here
 
-### Login (development credentials: admin / TaskManager123!)
+### Register
+POST {{Backend_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "TaskManager123!",
+  "confirmPassword": "TaskManager123!"
+}
+
+### Login
 POST {{Backend_HostAddress}}/api/auth/login
 Content-Type: application/json
 

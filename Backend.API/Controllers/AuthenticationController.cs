@@ -1,5 +1,6 @@
 using Backend.Application.Abstractions;
 using Backend.Application.Features.Authentication.Commands.AuthenticateUser;
+using Backend.Application.Features.Authentication.Commands.RegisterUser;
 using Backend.Application.Features.Authentication.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -13,6 +14,21 @@ public sealed class AuthenticationController(
     IMediator mediator,
     IAccessTokenGenerator accessTokenGenerator) : ControllerBase
 {
+    [AllowAnonymous]
+    [HttpPost("register")]
+    [ProducesResponseType(typeof(AccessTokenResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<AccessTokenResponse>> Register(
+        [FromBody] RegisterRequest request,
+        CancellationToken cancellationToken)
+    {
+        var user = await mediator.Send(new RegisterUserCommand(request), cancellationToken);
+
+        return StatusCode(
+            StatusCodes.Status201Created,
+            accessTokenGenerator.Generate(user.Username));
+    }
+
     [AllowAnonymous]
     [HttpPost("login")]
     [ProducesResponseType(typeof(AccessTokenResponse), StatusCodes.Status200OK)]

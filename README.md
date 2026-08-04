@@ -117,23 +117,23 @@ dotnet dev-certs https --trust
 
 ## Authentication
 
-The application uses JWT bearer authentication. A successful login returns a
+The application uses ASP.NET Core Identity with JWT bearer authentication. Users
+register with a username and password, which Identity hashes and stores in the
+SQL Server `AspNetUsers` table. A successful registration or login returns a
 short-lived access token, which the frontend stores in session storage and sends
 in the `Authorization: Bearer <token>` header for protected API requests.
 
-Development credentials:
+Apply the database migration before registering the first user:
 
-```text
-Username: admin
-Password: TaskManager123!
+```powershell
+dotnet ef database update --project Backend.Infrastructure --startup-project Backend.API
 ```
-
-The password is stored in development configuration as a PBKDF2 hash and salt. Replace the development credentials before using the project outside a coding-test environment.
 
 Authentication endpoints:
 
 ```text
 POST /api/auth/login
+POST /api/auth/register
 POST /api/auth/logout
 GET  /api/auth/me
 ```

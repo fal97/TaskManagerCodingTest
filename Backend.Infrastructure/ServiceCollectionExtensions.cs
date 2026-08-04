@@ -8,6 +8,7 @@ using Azure.Messaging.ServiceBus;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -43,20 +44,18 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<ApplicationDbContext>());
 
-        var authenticationSection = configuration.GetSection(
-            SimpleAuthenticationOptions.SectionName);
-        services.Configure<SimpleAuthenticationOptions>(options =>
-        {
-            options.Username = authenticationSection[nameof(options.Username)] ?? string.Empty;
-            options.PasswordHash = authenticationSection[nameof(options.PasswordHash)] ?? string.Empty;
-            options.PasswordSalt = authenticationSection[nameof(options.PasswordSalt)] ?? string.Empty;
-            options.Iterations = int.TryParse(
-                authenticationSection[nameof(options.Iterations)],
-                out var iterations)
-                    ? iterations
-                    : 100_000;
-        });
-        services.AddSingleton<IUserCredentialValidator, SimpleUserCredentialValidator>();
+        services
+            .AddIdentityCore<IdentityUser>(options =>
+            {
+                options.User.RequireUniqueEmail = false;
+                options.Password.RequiredLength = 8;
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireNonAlphanumeric = true;
+            })
+            .AddEntityFrameworkStores<ApplicationDbContext>();
+        services.AddScoped<IIdentityService, IdentityService>();
 
         var jwtSection = configuration.GetSection(JwtOptions.SectionName);
         services.Configure<JwtOptions>(options =>

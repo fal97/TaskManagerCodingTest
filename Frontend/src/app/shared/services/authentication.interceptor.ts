@@ -9,8 +9,9 @@ export const authenticationInterceptor: HttpInterceptorFn = (request, next) => {
   const router = inject(Router);
   const authenticationService = inject(AuthenticationService);
   const accessToken = authenticationService.getAccessToken();
-  const isLoginRequest = request.url.endsWith('/api/auth/login');
-  const authenticatedRequest = accessToken && !isLoginRequest
+  const isAnonymousRequest =
+    request.url.endsWith('/api/auth/login') || request.url.endsWith('/api/auth/register');
+  const authenticatedRequest = accessToken && !isAnonymousRequest
     ? request.clone({
         setHeaders: { Authorization: `Bearer ${accessToken}` },
       })
@@ -18,7 +19,7 @@ export const authenticationInterceptor: HttpInterceptorFn = (request, next) => {
 
   return next(authenticatedRequest).pipe(
     catchError((error) => {
-      if (error.status === 401 && !isLoginRequest) {
+      if (error.status === 401 && !isAnonymousRequest) {
         authenticationService.clearSession();
         void router.navigate(['/login'], {
           queryParams: { returnUrl: router.url === '/login' ? '/tasks' : router.url },

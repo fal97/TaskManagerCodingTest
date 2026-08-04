@@ -12,11 +12,11 @@ public class AuthenticateUserCommandHandlerTests
     [Fact]
     public async Task Handle_ValidCredentials_ReturnsAuthenticatedUser()
     {
-        var validator = new Mock<IUserCredentialValidator>();
-        validator
-            .Setup(service => service.ValidateAsync("admin", "correct", It.IsAny<CancellationToken>()))
+        var identityService = new Mock<IIdentityService>();
+        identityService
+            .Setup(service => service.CheckPasswordAsync("admin", "correct", It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
-        var handler = new AuthenticateUserCommandHandler(validator.Object);
+        var handler = new AuthenticateUserCommandHandler(identityService.Object);
         var command = new AuthenticateUserCommand(new LoginRequest
         {
             Username = "admin",
@@ -31,14 +31,14 @@ public class AuthenticateUserCommandHandlerTests
     [Fact]
     public async Task Handle_InvalidCredentials_ThrowsInvalidCredentialsException()
     {
-        var validator = new Mock<IUserCredentialValidator>();
-        validator
-            .Setup(service => service.ValidateAsync(
+        var identityService = new Mock<IIdentityService>();
+        identityService
+            .Setup(service => service.CheckPasswordAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
-        var handler = new AuthenticateUserCommandHandler(validator.Object);
+        var handler = new AuthenticateUserCommandHandler(identityService.Object);
         var command = new AuthenticateUserCommand(new LoginRequest
         {
             Username = "admin",

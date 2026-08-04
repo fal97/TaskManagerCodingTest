@@ -2,6 +2,8 @@ using Backend.Application.Abstractions;
 using Backend.Domain.Entities;
 using Backend.Infrastructure.Persistence.Configurations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.Reflection;
 
 namespace Backend.Infrastructure.Persistence;
@@ -10,7 +12,7 @@ namespace Backend.Infrastructure.Persistence;
 /// Application database context for the Task Management system.
 /// Manages the data access layer using Entity Framework Core.
 /// </summary>
-public class ApplicationDbContext : DbContext, IApplicationDbContext
+public class ApplicationDbContext : IdentityDbContext<IdentityUser>, IApplicationDbContext
 {
     /// <summary>
     /// Initializes a new instance of the ApplicationDbContext class.

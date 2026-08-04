@@ -3,23 +3,23 @@ using Backend.Application.Common.Exceptions;
 using Backend.Application.Features.Authentication.DTOs;
 using MediatR;
 
-namespace Backend.Application.Features.Authentication.Commands.AuthenticateUser;
+namespace Backend.Application.Features.Authentication.Commands.RegisterUser;
 
-public sealed class AuthenticateUserCommandHandler(IIdentityService identityService)
-    : IRequestHandler<AuthenticateUserCommand, AuthenticatedUserResponse>
+public sealed class RegisterUserCommandHandler(IIdentityService identityService)
+    : IRequestHandler<RegisterUserCommand, AuthenticatedUserResponse>
 {
     public async Task<AuthenticatedUserResponse> Handle(
-        AuthenticateUserCommand request,
+        RegisterUserCommand request,
         CancellationToken cancellationToken)
     {
-        var isValid = await identityService.CheckPasswordAsync(
+        var result = await identityService.RegisterAsync(
             request.Request.Username,
             request.Request.Password,
             cancellationToken);
 
-        if (!isValid)
+        if (!result.Succeeded)
         {
-            throw new InvalidCredentialsException();
+            throw new RequestValidationException(result.Errors);
         }
 
         return new AuthenticatedUserResponse(request.Request.Username);

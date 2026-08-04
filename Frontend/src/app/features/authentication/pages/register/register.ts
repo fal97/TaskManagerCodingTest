@@ -4,13 +4,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthenticationService } from '../../services';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-register',
   imports: [
     MatButtonModule,
     MatCardModule,
@@ -19,20 +19,20 @@ import { AuthenticationService } from '../../services';
     ReactiveFormsModule,
     RouterLink,
   ],
-  templateUrl: './login.html',
-  styleUrl: './login.css',
+  templateUrl: './register.html',
+  styleUrl: '../login/login.css',
 })
-export class Login {
+export class Register {
   private readonly formBuilder = inject(FormBuilder);
   private readonly authenticationService = inject(AuthenticationService);
   private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
 
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly form = this.formBuilder.nonNullable.group({
     username: ['', [Validators.required, Validators.maxLength(100)]],
-    password: ['', [Validators.required, Validators.maxLength(200)]],
+    password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(200)]],
+    confirmPassword: ['', Validators.required],
   });
 
   protected submit(): void {
@@ -41,20 +41,21 @@ export class Login {
       return;
     }
 
+    const request = this.form.getRawValue();
+    if (request.password !== request.confirmPassword) {
+      this.errorMessage.set('Passwords do not match.');
+      return;
+    }
+
     this.submitting.set(true);
     this.errorMessage.set(null);
-
     this.authenticationService
-      .login(this.form.getRawValue())
+      .register(request)
       .pipe(finalize(() => this.submitting.set(false)))
       .subscribe({
-        next: () => {
-          const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/tasks';
-          void this.router.navigateByUrl(returnUrl);
-        },
-        error: () => {
-          this.errorMessage.set('The username or password is incorrect.');
-        },
+        next: () => void this.router.navigate(['/tasks']),
+        error: () => this.errorMessage.set(
+          'Registration failed. Choose a unique username and a stronger password.'),
       });
   }
 }

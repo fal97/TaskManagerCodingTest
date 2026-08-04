@@ -3,7 +3,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { catchError, Observable, of, tap } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
-import { AccessTokenResponse, AuthenticatedUser, LoginRequest } from '../models';
+import { AccessTokenResponse, AuthenticatedUser, LoginRequest, RegisterRequest } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthenticationService {
@@ -17,12 +17,13 @@ export class AuthenticationService {
   login(request: LoginRequest): Observable<AccessTokenResponse> {
     return this.http
       .post<AccessTokenResponse>(`${this.resourceUrl}/login`, request)
-      .pipe(
-        tap((response) => {
-          sessionStorage.setItem(AuthenticationService.ACCESS_TOKEN_KEY, response.accessToken);
-          this.userState.set({ username: response.username });
-        }),
-      );
+      .pipe(tap((response) => this.setAuthenticatedSession(response)));
+  }
+
+  register(request: RegisterRequest): Observable<AccessTokenResponse> {
+    return this.http
+      .post<AccessTokenResponse>(`${this.resourceUrl}/register`, request)
+      .pipe(tap((response) => this.setAuthenticatedSession(response)));
   }
 
   loadCurrentUser(): Observable<AuthenticatedUser | null> {
@@ -48,5 +49,10 @@ export class AuthenticationService {
 
   getAccessToken(): string | null {
     return sessionStorage.getItem(AuthenticationService.ACCESS_TOKEN_KEY);
+  }
+
+  private setAuthenticatedSession(response: AccessTokenResponse): void {
+    sessionStorage.setItem(AuthenticationService.ACCESS_TOKEN_KEY, response.accessToken);
+    this.userState.set({ username: response.username });
   }
 }
