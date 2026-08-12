@@ -2,13 +2,11 @@ using Backend.Application.Abstractions;
 using Backend.Application.Common.Behaviors;
 using Backend.Application.Features.Tasks.Commands.CreateUserTask;
 using Backend.Infrastructure.Persistence;
-using Backend.Infrastructure.Authentication;
 using Backend.Infrastructure.Messaging;
 using Azure.Messaging.ServiceBus;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -43,44 +41,6 @@ public static class ServiceCollectionExtensions
         // Register IApplicationDbContext interface for dependency injection
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<ApplicationDbContext>());
-
-        services
-            .AddIdentityCore<IdentityUser>(options =>
-            {
-                options.User.RequireUniqueEmail = false;
-                options.Password.RequiredLength = 8;
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireNonAlphanumeric = true;
-            })
-            .AddEntityFrameworkStores<ApplicationDbContext>();
-        services.AddScoped<IIdentityService, IdentityService>();
-
-        var jwtSection = configuration.GetSection(JwtOptions.SectionName);
-        services.Configure<JwtOptions>(options =>
-        {
-            options.Issuer = jwtSection[nameof(options.Issuer)] ?? string.Empty;
-            options.Audience = jwtSection[nameof(options.Audience)] ?? string.Empty;
-            options.SigningKey = jwtSection[nameof(options.SigningKey)] ?? string.Empty;
-            options.AccessTokenMinutes = int.TryParse(
-                jwtSection[nameof(options.AccessTokenMinutes)],
-                out var accessTokenMinutes)
-                    ? accessTokenMinutes
-                    : 15;
-        });
-        services
-            .AddOptions<JwtOptions>()
-            .Validate(options => !string.IsNullOrWhiteSpace(options.Issuer),
-                "Jwt:Issuer is required.")
-            .Validate(options => !string.IsNullOrWhiteSpace(options.Audience),
-                "Jwt:Audience is required.")
-            .Validate(options => options.SigningKey.Length >= 32,
-                "Jwt:SigningKey must be at least 32 characters.")
-            .Validate(options => options.AccessTokenMinutes > 0,
-                "Jwt:AccessTokenMinutes must be greater than zero.")
-            .ValidateOnStart();
-        services.AddSingleton<IAccessTokenGenerator, JwtAccessTokenGenerator>();
 
         var serviceBusSection = configuration.GetSection(
             ServiceBusOptions.SectionName);

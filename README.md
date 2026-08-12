@@ -11,7 +11,7 @@ Task Manager is a full-stack task management application built with ASP.NET Core
 - SQL Server
 - MediatR and CQRS
 - FluentValidation
-- JWT bearer authentication
+- Keycloak with OpenID Connect/JWT bearer authentication
 - xUnit, Moq, and FluentAssertions
 
 ### Frontend
@@ -43,6 +43,7 @@ Install the following software:
 - [Node.js](https://nodejs.org/) 22.19 or newer compatible with Angular 21
 - SQL Server, SQL Server Express, or SQL Server LocalDB
 - SQL Server Management Studio or Azure Data Studio
+- Docker Desktop (for the local Keycloak container)
 
 ## Database setup
 
@@ -117,30 +118,42 @@ dotnet dev-certs https --trust
 
 ## Authentication
 
-The application uses ASP.NET Core Identity with JWT bearer authentication. Users
-register with a username and password, which Identity hashes and stores in the
-SQL Server `AspNetUsers` table. A successful registration or login returns a
-short-lived access token, which the frontend stores in session storage and sends
-in the `Authorization: Bearer <token>` header for protected API requests.
+Authentication is handled by a local Keycloak development instance. Keycloak
+owns registration, login, passwords, sessions, and token issuance. The Angular
+application uses Authorization Code Flow with PKCE and sends the resulting access
+token in the `Authorization: Bearer <token>` header. The API validates Keycloak's
+issuer, signature, expiry, and `task-manager-api` audience.
 
-Apply the database migration before registering the first user:
+Start Keycloak from the repository root:
 
 ```powershell
-dotnet ef database update --project Backend.Infrastructure --startup-project Backend.API
+docker compose -f docker-compose.keycloak.yml up -d
 ```
 
-Authentication endpoints:
+Open the administration console at `http://localhost:8080/admin` using the local
+development administrator `admin` / `admin`. The imported `task-manager` realm
+also contains this development-only account:
 
 ```text
-POST /api/auth/login
-POST /api/auth/register
-POST /api/auth/logout
-GET  /api/auth/me
+Username: testuser
+Password: Test123!
 ```
 
-All task endpoints require a valid bearer token. The development access token
-expires after 15 minutes. Signing out removes the token from the browser; because
-access tokens are stateless, an issued token remains valid until it expires.
+The realm enables self-registration from the application's **Create an account**
+button. Its reproducible configuration is in
+`keycloak/task-manager-realm.json`. Realm import only occurs when the realm does
+not already exist. To re-import it from scratch, explicitly remove the Compose
+volume and start the service again; doing so deletes local Keycloak users and
+configuration.
+
+All task endpoints require a valid Keycloak bearer token. The only backend auth
+endpoint is `GET /api/auth/me`; credentials are never sent to this API.
+
+Stop Keycloak without deleting its data:
+
+```powershell
+docker compose -f docker-compose.keycloak.yml down
+```
 
 ## Run the frontend
 

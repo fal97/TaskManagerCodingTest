@@ -1,58 +1,76 @@
-import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
-import { catchError, Observable, of, tap } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
+import Keycloak, { KeycloakLoginOptions, KeycloakTokenParsed } from 'keycloak-js';
 
 import { environment } from '../../../../environments/environment';
-import { AccessTokenResponse, AuthenticatedUser, LoginRequest, RegisterRequest } from '../models';
+import { AuthenticatedUser } from '../models';
+
+interface TaskManagerToken extends KeycloakTokenParsed {
+  preferred_username?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthenticationService {
-  private static readonly ACCESS_TOKEN_KEY = 'task_manager_access_token';
-  private readonly http = inject(HttpClient);
-  private readonly resourceUrl = `${environment.apiBaseUrl}/api/auth`;
+  private readonly keycloak = new Keycloak(environment.keycloak);
   private readonly userState = signal<AuthenticatedUser | null>(null);
 
   readonly currentUser = this.userState.asReadonly();
 
-  login(request: LoginRequest): Observable<AccessTokenResponse> {
-    return this.http
-      .post<AccessTokenResponse>(`${this.resourceUrl}/login`, request)
-      .pipe(tap((response) => this.setAuthenticatedSession(response)));
+  async initialize(): Promise<void> {
+    const authenticated = await this.keycloak.init({
+      onLoad: 'check-sso',
+      pkceMethod: 'S256',
+      checkLoginIframe: false,
+    });
+
+    this.updateUserState(authenticated);
+    this.keycloak.onAuthSuccess = () => this.updateUserState(true);
+    this.keycloak.onAuthLogout = () => this.updateUserState(false);
+    this.keycloak.onTokenExpired = () => void this.refreshToken();
   }
 
-  register(request: RegisterRequest): Observable<AccessTokenResponse> {
-    return this.http
-      .post<AccessTokenResponse>(`${this.resourceUrl}/register`, request)
-      .pipe(tap((response) => this.setAuthenticatedSession(response)));
+  isAuthenticated(): boolean {
+    return this.keycloak.authenticated === true;
   }
 
-  loadCurrentUser(): Observable<AuthenticatedUser | null> {
-    return this.http.get<AuthenticatedUser>(`${this.resourceUrl}/me`).pipe(
-      tap((user) => this.userState.set(user)),
-      catchError(() => {
-        this.userState.set(null);
-        return of(null);
-      }),
-    );
+  login(options?: KeycloakLoginOptions): Promise<void> {
+    return this.keycloak.login(options);
   }
 
-  logout(): Observable<void> {
-    return this.http
-      .post<void>(`${this.resourceUrl}/logout`, {})
-      .pipe(tap(() => this.clearSession()));
+  register(redirectUri: string): Promise<void> {
+    return this.keycloak.register({ redirectUri });
   }
 
-  clearSession(): void {
-    sessionStorage.removeItem(AuthenticationService.ACCESS_TOKEN_KEY);
-    this.userState.set(null);
+  logout(): Promise<void> {
+    return this.keycloak.logout({ redirectUri: window.location.origin });
   }
 
-  getAccessToken(): string | null {
-    return sessionStorage.getItem(AuthenticationService.ACCESS_TOKEN_KEY);
+  async getValidAccessToken(): Promise<string | null> {
+    if (!this.isAuthenticated()) {
+      return null;
+    }
+
+    await this.refreshToken();
+    return this.keycloak.token ?? null;
   }
 
-  private setAuthenticatedSession(response: AccessTokenResponse): void {
-    sessionStorage.setItem(AuthenticationService.ACCESS_TOKEN_KEY, response.accessToken);
-    this.userState.set({ username: response.username });
+  private async refreshToken(): Promise<void> {
+    try {
+      await this.keycloak.updateToken(30);
+    } catch {
+      this.updateUserState(false);
+      await this.login({ redirectUri: window.location.href });
+    }
+  }
+
+  private updateUserState(authenticated: boolean): void {
+    if (!authenticated) {
+      this.userState.set(null);
+      return;
+    }
+
+    const token = this.keycloak.tokenParsed as TaskManagerToken | undefined;
+    this.userState.set({
+      username: token?.preferred_username ?? token?.sub ?? 'User',
+    });
   }
 }

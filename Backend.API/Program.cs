@@ -1,9 +1,7 @@
 using Backend.API.Middleware;
 using Backend.Infrastructure;
-using Backend.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,26 +11,29 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddControllers();
-var jwtOptions = builder.Configuration
-    .GetSection(JwtOptions.SectionName)
-    .Get<JwtOptions>() ?? throw new InvalidOperationException("JWT configuration is missing.");
+var authenticationSection = builder.Configuration.GetRequiredSection("Authentication");
+var authority = authenticationSection["Authority"]
+    ?? throw new InvalidOperationException("Authentication:Authority is missing.");
+var audience = authenticationSection["Audience"]
+    ?? throw new InvalidOperationException("Authentication:Audience is missing.");
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.Authority = authority;
+        options.Audience = audience;
+        options.RequireHttpsMetadata = authenticationSection.GetValue(
+            "RequireHttpsMetadata",
+            true);
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = jwtOptions.Issuer,
             ValidateAudience = true,
-            ValidAudience = jwtOptions.Audience,
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromMinutes(1),
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
-            NameClaimType = System.Security.Claims.ClaimTypes.Name
+            NameClaimType = "preferred_username"
         };
     });
 builder.Services.AddAuthorization();

@@ -1,20 +1,17 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
-import { map } from 'rxjs';
+import { CanActivateFn } from '@angular/router';
 
 import { AuthenticationService } from '../services';
 
-export const authenticationGuard: CanActivateFn = (_route, state) => {
+export const authenticationGuard: CanActivateFn = async (_route, state) => {
   const authenticationService = inject(AuthenticationService);
-  const router = inject(Router);
 
-  return authenticationService.loadCurrentUser().pipe(
-    map((user) =>
-      user
-        ? true
-        : router.createUrlTree(['/login'], {
-            queryParams: { returnUrl: state.url },
-          }),
-    ),
-  );
+  if (authenticationService.isAuthenticated()) {
+    return true;
+  }
+
+  await authenticationService.login({
+    redirectUri: `${window.location.origin}${state.url}`,
+  });
+  return false;
 };
